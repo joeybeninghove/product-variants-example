@@ -21,19 +21,21 @@ class Product < ApplicationRecord
   end
 
   def generate_variants
-    hash = {}
+    option_type_value_groupings = {}
 
     option_types.each do |option_type|
-      hash[option_type.id] = option_type.option_values.map(&:id)
+      option_type_value_groupings[option_type.id] =
+        option_type.option_values.map(&:id)
     end
 
-    values = hash.values
-    values = values.inject(values.shift) do |memo, value|
-      memo.product(value).map(&:flatten)
+    all_value_ids = option_type_value_groupings.values
+    all_value_ids =
+      all_value_ids.inject(all_value_ids.shift) do |memo, value|
+        memo.product(value).map(&:flatten)
     end
 
-    values.each do |ids|
-      variants.create(option_value_ids: ids, price: master.price)
+    all_value_ids.each do |value_ids|
+      variants.create(option_value_ids: value_ids, price: master.price)
     end
   end
 end
